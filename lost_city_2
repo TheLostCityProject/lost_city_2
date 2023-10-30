@@ -1,0 +1,81 @@
+import sys
+import pygame
+import pyautogui
+from settings import Settings
+# from player_1 import Player_1
+from pygame import locals
+from PIL import Image
+import json
+import socket
+from blit import Blit
+
+
+
+class LostCity:
+    """管理游戏资源和行为的类"""
+    def __init__(self):
+        """初始化游戏并创建游戏资源"""
+        pygame.init()
+        with open('main/surface.json',"r",encoding='utf8') as f:
+            self.surface_json:dict = json.load(f)
+        self.clock = pygame.time.Clock()
+        self.settings=Settings()
+
+        self.icon = pygame.image.load('main/images/lost_city.png')                     # initialize the screen
+        pygame.display.set_icon(self.icon)
+
+        self.screen = pygame.display.set_mode(
+            (self.settings.width_game_screen,self.settings.height_game_screen))
+        self.settings.width =  self.screen.get_rect().width
+        self.settings.height = self.screen.get_rect().height
+        self.mouse_click_pos = (-1,-1)
+        self.mouse_pos = (-1,-1)
+        self.blit = Blit(self)
+
+        pygame.display.set_caption("Lost City")
+
+    
+
+    def run_game(self):
+        """开始游戏的主循环"""
+        while True:
+            #侦听鼠标和键盘事件
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    self.mouse_click_pos = pygame.mouse.get_pos()
+
+            self.blit._image_events()
+            self.blit._blit_events()
+            self.blit._check_button()
+            self.blit._blit_hightlight()
+            self.blit._highlight_button()
+
+            pygame.display.flip()
+            self.mouse_pos = pygame.mouse.get_pos()
+            self.mouse_click_pos = (-1,-1)
+            self.clock.tick(60)
+
+
+#定义服务器名称
+HOST = '0.0.0.0'
+PORT = 400
+BUFSIZE = 1024
+ADDR = (HOST,PORT)
+
+#定义服务器属性
+tcpsersock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+tcpsersock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+tcpsersock.bind(ADDR)
+tcpsersock.listen(1)
+inputs=[tcpsersock]
+print(inputs)
+if __name__ == '__main__':
+    #创建游戏实例并运行游戏
+    lc = LostCity()
+    lc.run_game()
+
